@@ -184,7 +184,7 @@
     margin-right:auto;
   }
 
-  /* ================= GAME GRID (fills remaining height) ================= */
+  /* ================= GAME GRID ================= */
   .grid-wrap {
     flex:1;
     min-height:0;
@@ -226,14 +226,12 @@
     min-height:0;
   }
 
-  /* Top row: 2 playable — on desktop 2 cols, mobile 2 cols but shorter */
   .grid-playable {
     grid-template-columns: repeat(2, 1fr);
     flex: 1.35;
     min-height:0;
   }
 
-  /* Bottom row: 4 soon — 2 cols on mobile, 4 cols on desktop */
   .grid-soon {
     grid-template-columns: repeat(2, 1fr);
     flex: 1;
@@ -261,6 +259,7 @@
     text-decoration:none;
     color:inherit;
     min-height:0;
+    cursor:pointer;
   }
 
   .game-card::before {
@@ -484,8 +483,6 @@
 
   /* ================= RESPONSIVE ================= */
 
-  /* ===== MOBILE (default): 2 cols top (playable), 2 cols bottom (soon) ===== */
-  /* ===== TABLET / SMALL DESKTOP (>= 640px) ===== */
   @media (min-width: 640px) {
     .page { padding: 12px 22px; gap: 10px; }
     .brand-logo { width:44px; height:44px; font-size:20px; border-radius:14px; }
@@ -506,11 +503,9 @@
     .soon-text { font-size:14px; }
   }
 
-  /* ===== DESKTOP (>= 960px): 3 cols x 2 rows total grid ===== */
   @media (min-width: 960px) {
     .page { padding: 16px 32px; gap: 12px; }
 
-    /* Merge top + bottom into a 3-column visual grid by using one shared container */
     .grid-wrap {
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -518,17 +513,14 @@
       gap: 14px;
       align-items:stretch;
     }
-    /* Hide labels on desktop since we're merging visually */
     .row-label { display:none; }
 
-    /* Playable cards take slots 1 & 2 */
     .grid-playable {
-      display:contents; /* dissolve the inner grid so its children join parent grid */
+      display:contents;
     }
     .grid-playable > .game-card:nth-child(1) { grid-column: 1; grid-row: 1; }
     .grid-playable > .game-card:nth-child(2) { grid-column: 2; grid-row: 1; }
 
-    /* Soon cards: slot 3 in row 1, then slots 1-3 in row 2 */
     .grid-soon {
       display:contents;
       margin:0;
@@ -547,7 +539,6 @@
     .soon-text { font-size:15px; }
   }
 
-  /* ===== Very short screens: shrink more ===== */
   @media (max-height: 640px) {
     .hero-sub { display:none; }
     .hero-title { font-size: 16px; }
@@ -606,28 +597,40 @@
 
     <div class="grid grid-playable">
 
-      <a href="/almala3b" class="game-card" aria-label="أكشن الملاعب">
+      <!-- Card 1: أكشن الملاعب -->
+      <a
+        href="https://game-production-5fe9.up.railway.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="game-card"
+        aria-label="أكشن الملاعب">
         <div class="card-icon icon-act">⚽</div>
         <h2 class="card-title">أكشن الملاعب</h2>
         <p class="card-desc">
           لعبة كروت استراتيجية لكرة القدم — اجمع تشكيلتك وكن أول من يبني فريقه المثالي.
         </p>
-        <button class="card-cta" type="button" onclick="event.preventDefault(); window.location.href='/almala3b';">
+        <span class="card-cta">
           العب الآن
           <span class="arrow">←</span>
-        </button>
+        </span>
       </a>
 
-      <a href="/act-it-out" class="game-card" aria-label="التمثيل">
+      <!-- Card 2: التمثيل -->
+      <a
+        href="https://action-almala3b-27.vercel.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="game-card"
+        aria-label="التمثيل">
         <div class="card-icon icon-act2">🎭</div>
         <h2 class="card-title">التمثيل</h2>
         <p class="card-desc">
           فريقك يمثل والبقية يخمنون — كلمات من الأنمي والأفلام في سهرة مليانة ضحك.
         </p>
-        <button class="card-cta" type="button" onclick="event.preventDefault(); window.location.href='/act-it-out';">
+        <span class="card-cta">
           العب الآن
           <span class="arrow">←</span>
-        </button>
+        </span>
       </a>
 
     </div>
@@ -676,26 +679,27 @@
 </div>
 
 <script>
-  // ===== روابط الألعاب =====
-  const GAME_LINKS = {
-    almala3b:  '/almala3b',
-    actItOut:  '/act-it-out'
-  };
-
-  document.querySelectorAll('.game-card').forEach(card => {
-    const label = card.getAttribute('aria-label');
-    if (label === 'أكشن الملاعب') card.href = GAME_LINKS.almala3b;
-    if (label === 'التمثيل')      card.href = GAME_LINKS.actItOut;
-  });
-
+  // ===== منع النقر على كروت "قريباً" =====
   document.querySelectorAll('.soon-card').forEach(c => {
-    c.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
+    c.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
   });
 
-  // منع scroll البودي تماماً
-  document.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 1) e.preventDefault();
-  }, { passive: false });
+  // ===== تأثير دخول الكروت =====
+  window.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.game-card, .soon-card');
+    cards.forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(16px)';
+      el.style.transition = `opacity .5s ease ${i * 0.06}s, transform .5s ease ${i * 0.06}s`;
+      requestAnimationFrame(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      });
+    });
+  });
 </script>
 
 </body>
